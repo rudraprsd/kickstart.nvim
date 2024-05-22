@@ -239,7 +239,6 @@ require('lazy').setup({
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
-
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -846,6 +845,7 @@ require('lazy').setup({
         --  If you are experiencing weird indenting issues, add the language to
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
+        disable = { 'latex' }, --list of languages that will be disabled.
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
@@ -869,10 +869,13 @@ require('lazy').setup({
     'lervag/vimtex',
     lazy = false, -- we don't want to lazy load VimTeX
     -- tag = "v2.15", -- uncomment to pin to a specific release
+    -- VimTeX configuration goes here
     config = function()
       vim.g.tex_flavor = 'latex'
       vim.g.vimtex_view_method = 'zathura'
-      -- VimTeX configuration goes here
+      vim.g.vimtex_quickfix_mode = 0
+      vim.o.conceallevel = 1
+      vim.g.tex_conceal = 'abdmg'
     end,
   },
 
@@ -918,6 +921,21 @@ require('lazy').setup({
       lazy = '💤 ',
     },
   },
+})
+-- Stop LSP for LaTeX or .tex files
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'tex',
+  callback = function()
+    for _, client in pairs(vim.lsp.get_active_clients()) do
+      client.stop()
+    end
+  end,
+})
+
+-- Set syntax to tex by default for .tex files
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = '*.tex',
+  command = 'set syntax=tex',
 })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
